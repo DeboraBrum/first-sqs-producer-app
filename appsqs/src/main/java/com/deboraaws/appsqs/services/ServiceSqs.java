@@ -1,7 +1,7 @@
 package com.deboraaws.appsqs.services;
 
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import com.deboraaws.appsqs.credential.CredentialsAws;
+
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
@@ -10,35 +10,16 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 public class ServiceSqs {
 	
-	public static void sendMessage(String message) {
-		AwsCredentialsProvider credentials = new AwsCredentialsProvider() {
-
-			@Override
-			public AwsCredentials resolveCredentials() {
-				return new AwsCredentials() {
-
-					@Override
-					public String accessKeyId() {
-						return System.getenv("AWS_ACCESS_KEY");
-					}
-
-					@Override
-					public String secretAccessKey() {
-						return System.getenv("AWS_SECRET_ACCESS_KEY");
-					}
-					
-				};
-			}
-			
-		};
+	public static void dispatch(String message) {
 		
 		SqsClient sqsClient = SqsClient.builder()
-										.region(Region.US_EAST_1)
-										.credentialsProvider(credentials)
-										.build();
+				.region(Region.US_EAST_1)
+				.credentialsProvider(CredentialsAws.getCredentials())
+				.build();
 		GetQueueUrlRequest request = GetQueueUrlRequest.builder()
-														.queueName("nome-fila")
-														.queueOwnerAWSAccountId("numero-id").build();
+				.queueName("nome-fila")
+				.queueOwnerAWSAccountId("numero-id")
+				.build();
 		GetQueueUrlResponse result = sqsClient.getQueueUrl(request);
 		
 		sendMessage(sqsClient, result.queueUrl(), message);
